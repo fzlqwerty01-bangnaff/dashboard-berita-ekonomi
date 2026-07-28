@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Monitoring Berita Ekonomi Surabaya - BPS</title>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <!-- PapaParse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="./public/css/style.css">
+    <style>
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+        .nav-btn.active {
+            background-color: var(--card-bg);
+            color: var(--primary-color);
+            box-shadow: var(--shadow-sm);
+            border-color: var(--border-soft);
+        }
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .pagination-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-soft);
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header & Logo -->
+    <div class="top-container" style="position: sticky; top: 0; background-color: var(--bg-color); z-index: 100; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-soft); padding: 20px 0; margin-top: -20px; margin-bottom: 30px;">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <div class="grid-icon"><div></div><div></div><div></div><div></div></div>
+            </div>
+            <h1 class="header-title" id="mainHeaderTitle" style="font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">
+                Dashboard Monitoring Berita Ekonomi
+            </h1>
+        </div>
+        <div>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Lambang_Badan_Pusat_Statistik_%28BPS%29_Indonesia.svg/300px-Lambang_Badan_Pusat_Statistik_%28BPS%29_Indonesia.svg.png" alt="Logo BPS" class="bps-logo" style="width: 48px; height: 48px; object-fit: contain;">
+        </div>
+    </div>
+
+    <!-- Layout Utama -->
+    <div class="main-layout">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebarMenu">
+            <button class="nav-btn active" onclick="switchPage('home')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Beranda
+            </button>
+            <button class="nav-btn" onclick="switchPage('kategori')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                Kategori
+            </button>
+            <button class="nav-btn" onclick="switchPage('arsip')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>
+                Arsip
+            </button>
+        </div>
+
+        <!-- Area Konten Utama -->
+        <div class="content-area">
+            
+            <!-- PAGE: HOME -->
+            <div id="page-home" class="page-section active page-card">
+                <h2>Ringkasan Statistik & Berita Ekonomi Surabaya</h2>
+                <p>Pantau jumlah berita per sektor dan pembaruan data ekonomi terbaru di Kota Surabaya.</p>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Berita</div>
+                        <div class="stat-value" id="statTotalBerita">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Sumber</div>
+                        <div class="stat-value" id="statTotalSumber">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Status Data</div>
+                        <div class="stat-value" style="font-size: 16px; margin-top: 6px; color: #16a34a;" id="statStatus">Live Google Sheet</div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid-top">
+                    <div class="card-box">
+                        <h3>Jumlah Berita per Sektor</h3>
+                        <div style="position: relative; height: 350px; width: 100%; display: flex; justify-content: center;">
+                            <canvas id="newsChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card-box">
+                        <h3>5 Berita / Data Terbaru</h3>
+                        <ul class="news-list" id="latestNewsList">
+                            <li style="padding: 15px; text-align: center;">Memuat data...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE: KATEGORI -->
+            <div id="page-kategori" class="page-section page-card">
+                <h2>Daftar Sektor Ekonomi Surabaya</h2>
+                <p>Gunakan filter atau pilih sektor di bawah untuk menjelajahi rincian berita.</p>
+                <div class="filter-container">
+                    <div class="filter-group">
+                        <label>Dari Tanggal</label>
+                        <input type="date" id="filterStart" value="2024-01-01">
+                    </div>
+                    <div class="filter-group">
+                        <label>Sampai Tanggal</label>
+                        <input type="date" id="filterEnd" value="2026-12-31">
+                    </div>
+                    <button class="filter-btn" onclick="renderCategoriesGrid()">Terapkan Filter</button>
+                </div>
+                <div class="categories-grid" id="categoriesGrid">
+                    <!-- Dynamic categories -->
+                </div>
+            </div>
+
+            <!-- PAGE: SUBKATEGORI -->
+            <div id="page-subkategori" class="page-section page-card">
+                <button class="back-btn" id="subBackBtn" onclick="goBackSub()">← Kembali ke Daftar Sektor</button>
+                <h2 id="subTitle">Detail Sektor</h2>
+                <div id="subContextPeriode" style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;"></div>
+                <ul class="sub-list" id="subListContent">
+                    <!-- Dynamic sub items -->
+                </ul>
+            </div>
+
+            <!-- PAGE: ARSIP -->
+            <div id="page-arsip" class="page-section page-card">
+                <h2>Arsip Seluruh Berita Ekonomi</h2>
+                <p>Menampilkan semua data dan berita hasil scraping yang dikelompokkan secara terstruktur.</p>
+
+                <div class="filter-container">
+                    <div class="filter-group">
+                        <label>Dari Tanggal</label>
+                        <input type="date" id="arsipStart" value="2024-01-01" onchange="renderArsipTable()">
+                    </div>
+                    <div class="filter-group">
+                        <label>Sampai Tanggal</label>
+                        <input type="date" id="arsipEnd" value="2026-12-31" onchange="renderArsipTable()">
+                    </div>
+                    <div class="filter-group">
+                        <label>Cari Judul / Berita</label>
+                        <input type="text" id="arsipSearch" placeholder="Ketik kata kunci..." oninput="renderArsipTable()">
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                        <thead>
+                            <tr style="background: var(--bg-color); border-bottom: 2px solid var(--border-soft); text-align: left;">
+                                <th style="padding: 12px 16px;">Ringkasan Berita</th>
+                                <th style="padding: 12px 16px;">Sektor / Suburaian</th>
+                                <th style="padding: 12px 16px;">Sumber</th>
+                                <th style="padding: 12px 16px;">Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="arsipTableBody">
+                            <tr><td colspan="4" style="text-align: center; padding: 20px;">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-container">
+                    <div id="arsipPageInfo" style="font-size: 14px; color: var(--text-secondary);">Halaman 1</div>
+                    <div>
+                        <button class="pagination-btn" id="arsipPrevBtn" onclick="changeArsipPage(-1)">Sebelumnya</button>
+                        <button class="pagination-btn" id="arsipNextBtn" onclick="changeArsipPage(1)">Selanjutnya</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/1frOwPzCDgQ-5Z4frFhyK167BKE3YhBPcdw2U_v6kRNg/export?format=csv";
+        let allNewsData = [];
+        let chartInstance = null;
+        let currentPageState = 'home';
+        
+        // Navigation & State
+        let selectedCategory = null;
+        let selectedUraian = null;
+        let currentSubLevel = 1; // 1 = Uraian list, 2 = Suburaian list, 3 = News list
+
+        let arsipPage = 1;
+        const ARSIP_LIMIT = 15;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDataFromGoogleSheets();
+        });
+
+        function loadDataFromGoogleSheets() {
+            Papa.parse(CSV_URL, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    allNewsData = results.data.filter(row => row.Kategori || row.Ringkasan_Berita || row['Ringkasan Berita']);
+                    initDashboard();
+                },
+                error: function(err) {
+                    console.error("Gagal memuat CSV:", err);
+                    document.getElementById('statStatus').innerText = "Gagal memuat data";
+                    document.getElementById('statStatus').style.color = "red";
+                }
+            });
+        }
+
+        function initDashboard() {
+            // Normalize field names
+            allNewsData = allNewsData.map(item => ({
+                kategori: item['Kategori'] || '',
+                kodeKategori: item['Kode Kategori'] || '',
+                uraian: item['Uraian'] || '',
+                suburaian: item['Suburaian'] || '',
+                sumber: item['Sumber Berita/Data'] || '#',
+                tanggal: item['Tanggal-Bulan Berita/Data'] || '2026-01-01',
+                ringkasan: item['Ringkasan Berita'] || item['Isi Berita'] || 'Tanpa Judul',
+                isiBerita: item['Isi Berita'] || ''
+            }));
+
+            // Stats
+            document.getElementById('statTotalBerita').innerText = allNewsData.length;
+            const uniqueSources = new Set(allNewsData.map(n => n.sumber)).size;
+            document.getElementById('statTotalSumber').innerText = uniqueSources;
+
+            // Render components
+            renderHomeChartAndLatest();
+            renderCategoriesGrid();
+            renderArsipTable();
+        }
+
+        function switchPage(pageId) {
+            currentPageState = pageId;
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
+            const targetSection = document.getElementById('page-' + pageId);
+            if (targetSection) targetSection.classList.add('active');
+
+            const btnIndex = ['home', 'kategori', 'arsip'].indexOf(pageId);
+            if (btnIndex !== -1) {
+                document.querySelectorAll('.nav-btn')[btnIndex].classList.add('active');
+            }
+        }
+
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebarMenu');
+            sidebar.classList.toggle('active');
+        }
+
+        // --- HOME PAGE ---
+        function renderHomeChartAndLatest() {
+            // Count per Category
+            const counts = {};
+            allNewsData.forEach(item => {
+                const cat = item.kategori || 'Lainnya';
+                counts[cat] = (counts[cat] || 0) + 1;
+            });
+
+            const labels = Object.keys(counts);
+            const dataValues = Object.values(counts);
+
+            const ctx = document.getElementById('newsChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.map(l => l.length > 25 ? l.substring(0, 22) + '...' : l),
+                    datasets: [{
+                        label: 'Jumlah Berita',
+                        data: dataValues,
+                        backgroundColor: '#2563EB',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { font: { size: 11 } } },
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Render 5 Latest News
+            const latestList = document.getElementById('latestNewsList');
+            latestList.innerHTML = '';
+            const top5 = allNewsData.slice(0, 5);
+
+            top5.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'news-item';
+                li.innerHTML = `
+                    <div class="news-title">${item.ringkasan}</div>
+                    <div class="news-meta">${item.kategori} • ${item.tanggal}</div>
+                `;
+                latestList.appendChild(li);
+            });
+        }
+
+        // --- KATEGORI & SUBKATEGORI ---
+        function renderCategoriesGrid() {
+            const grid = document.getElementById('categoriesGrid');
+            grid.innerHTML = '';
+
+            // Unique categories from CSV
+            const categoriesMap = {};
+            allNewsData.forEach(item => {
+                if (item.kategori && !categoriesMap[item.kategori]) {
+                    categoriesMap[item.kategori] = item.kodeKategori;
+                }
+            });
+
+            Object.keys(categoriesMap).forEach(catName => {
+                const pill = document.createElement('div');
+                pill.className = 'category-pill';
+                pill.onclick = () => openSubCategoryPage(catName);
+                pill.innerHTML = `
+                    <div class="category-circle"></div>
+                    <div class="category-text">${catName}</div>
+                `;
+                grid.appendChild(pill);
+            });
+        }
+
+        function openSubCategoryPage(categoryName) {
+            selectedCategory = categoryName;
+            currentSubLevel = 1;
+            switchPage('subkategori');
+            renderSubLevel1();
+        }
+
+        function renderSubLevel1() {
+            currentSubLevel = 1;
+            document.getElementById('subTitle').innerText = selectedCategory;
+            document.getElementById('subBackBtn').innerText = '← Kembali ke Daftar Sektor';
+            document.getElementById('subBackBtn').onclick = () => switchPage('kategori');
+
+            const list = document.getElementById('subListContent');
+            list.innerHTML = '';
+
+            // Unique Uraian under this Category
+            const uraians = [...new Set(allNewsData
+                .filter(n => n.kategori === selectedCategory)
+                .map(n => n.uraian)
+                .filter(Boolean))];
+
+            if (uraians.length === 0) {
+                list.innerHTML = '<li style="padding:20px; text-align:center;">Tidak ada rincian uraian untuk sektor ini.</li>';
+                return;
+            }
+
+            uraians.forEach(ur => {
+                const li = document.createElement('li');
+                li.className = 'sub-item';
+                li.innerHTML = `<span>${ur}</span> <span>➔ Lihat Suburaian</span>`;
+                li.onclick = () => renderSubLevel2(ur);
+                list.appendChild(li);
+            });
+        }
+
+        function renderSubLevel2(uraianName) {
+            selectedUraian = uraianName;
+            currentSubLevel = 2;
+            document.getElementById('subTitle').innerText = uraianName;
+            document.getElementById('subBackBtn').innerText = '← Kembali ke Uraian';
+            document.getElementById('subBackBtn').onclick = () => renderSubLevel1();
+
+            const list = document.getElementById('subListContent');
+            list.innerHTML = '';
+
+            const suburaians = [...new Set(allNewsData
+                .filter(n => n.kategori === selectedCategory && n.uraian === uraianName)
+                .map(n => n.suburaian)
+                .filter(Boolean))];
+
+            if (suburaians.length === 0) {
+                renderSubNews(uraianName, null);
+                return;
+            }
+
+            suburaians.forEach(sub => {
+                const li = document.createElement('li');
+                li.className = 'sub-item';
+                li.innerHTML = `<span>${sub}</span> <span>📄 Lihat Berita</span>`;
+                li.onclick = () => renderSubNews(uraianName, sub);
+                list.appendChild(li);
+            });
+        }
+
+        function renderSubNews(uraianName, suburaianName) {
+            currentSubLevel = 3;
+            document.getElementById('subTitle').innerText = suburaianName ? `Berita: ${suburaianName}` : `Berita: ${uraianName}`;
+            document.getElementById('subBackBtn').innerText = '← Kembali ke Suburaian';
+            document.getElementById('subBackBtn').onclick = () => renderSubLevel2(uraianName);
+
+            const list = document.getElementById('subListContent');
+            list.innerHTML = '';
+
+            const newsList = allNewsData.filter(n => 
+                n.kategori === selectedCategory && 
+                n.uraian === uraianName && 
+                (suburaianName ? n.suburaian === suburaianName : true)
+            );
+
+            if (newsList.length === 0) {
+                list.innerHTML = '<li style="padding:20px; text-align:center; color: var(--text-secondary);">Belum ada berita untuk suburaian ini.</li>';
+                return;
+            }
+
+            newsList.forEach(news => {
+                const li = document.createElement('li');
+                li.style.background = 'var(--card-bg)';
+                li.style.border = '1px solid var(--border-soft)';
+                li.style.padding = '16px 20px';
+                li.style.borderRadius = 'var(--radius-md)';
+                li.style.boxShadow = 'var(--shadow-sm)';
+                li.style.marginBottom = '12px';
+                li.style.listStyle = 'none';
+                
+                li.innerHTML = `
+                    <div style="font-weight: 700; font-size: 15px; color: var(--text-primary); line-height: 1.4;">${news.ringkasan}</div>
+                    <div style="font-size: 13px; color: var(--text-secondary); display: flex; gap: 16px; margin-top: 8px;">
+                        <span>📰 <a href="${news.sumber}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-weight:600;">Lihat Sumber ↗</a></span>
+                        <span>📅 ${news.tanggal}</span>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function goBackSub() {
+            if (currentSubLevel === 3) renderSubLevel2(selectedUraian);
+            else if (currentSubLevel === 2) renderSubLevel1();
+            else switchPage('kategori');
+        }
+
+        // --- ARSIP PAGE ---
+        function renderArsipTable() {
+            const startVal = document.getElementById('arsipStart').value;
+            const endVal = document.getElementById('arsipEnd').value;
+            const searchVal = document.getElementById('arsipSearch').value.toLowerCase();
+
+            let filtered = allNewsData.filter(item => {
+                const matchesSearch = !searchVal || 
+                    item.ringkasan.toLowerCase().includes(searchVal) || 
+                    item.kategori.toLowerCase().includes(searchVal) || 
+                    item.suburaian.toLowerCase().includes(searchVal);
+                return matchesSearch;
+            });
+
+            const totalPages = Math.ceil(filtered.length / ARSIP_LIMIT) || 1;
+            if (arsipPage > totalPages) arsipPage = totalPages;
+
+            const startIndex = (arsipPage - 1) * ARSIP_LIMIT;
+            const paginated = filtered.slice(startIndex, startIndex + ARSIP_LIMIT);
+
+            const tbody = document.getElementById('arsipTableBody');
+            tbody.innerHTML = '';
+
+            if (paginated.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px;">Belum ada berita ditemukan.</td></tr>`;
+                return;
+            }
+
+            paginated.forEach(news => {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid var(--border-soft)';
+                tr.innerHTML = `
+                    <td style="padding: 12px 16px; font-weight: 600; color: var(--text-primary); font-size: 14px;">${news.ringkasan}</td>
+                    <td style="padding: 12px 16px; color: var(--text-secondary); font-size: 13px;">${news.kategori} <br><small style="color:var(--text-muted);">${news.suburaian}</small></td>
+                    <td style="padding: 12px 16px; color: var(--text-secondary); font-size: 13px;"><a href="${news.sumber}" target="_blank" style="color: var(--primary-color); text-decoration: none;">Sumber ↗</a></td>
+                    <td style="padding: 12px 16px; color: var(--text-secondary); font-size: 13px;">${news.tanggal}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('arsipPageInfo').innerText = `Halaman ${arsipPage} dari ${totalPages} (Total: ${filtered.length} Berita)`;
+            document.getElementById('arsipPrevBtn').disabled = arsipPage <= 1;
+            document.getElementById('arsipNextBtn').disabled = arsipPage >= totalPages;
+        }
+
+        function changeArsipPage(delta) {
+            arsipPage += delta;
+            renderArsipTable();
+        }
+    </script>
+</body>
+</html>

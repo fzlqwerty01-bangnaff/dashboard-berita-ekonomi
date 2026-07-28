@@ -1,0 +1,61 @@
+<div class="category-page page-card" id="categoryPage">
+    <h2>Daftar Sektor Ekonomi Surabaya</h2>
+    <p>Gunakan filter rentang tanggal, bulan, tahun, atau pilih spesifik sektor di bawah ini.</p>
+    
+    <div class="filter-container">
+        <div class="filter-group">
+            <label>Dari Tanggal / Bulan / Tahun</label>
+            <input type="date" id="startDate" value="<%= typeof start !== 'undefined' && start ? start : '2024-01-01' %>">
+        </div>
+        <div class="filter-group">
+            <label>Sampai Tanggal / Bulan / Tahun</label>
+            <input type="date" id="endDate" value="<%= typeof end !== 'undefined' && end ? end : '2026-12-31' %>">
+        </div>
+        <div class="filter-group">
+            <label>Saring Sektor</label>
+            <select id="filterSektor">
+                <option value="all">Semua Sektor</option>
+                <option value="pertanian">Pertanian, Kehutanan, dan Perikanan</option>
+                <option value="pertambangan">Pertambangan dan Penggalian</option>
+                <option value="industri">Industri Pengolahan</option>
+                <option value="listrik">Pengadaan Listrik dan Gas</option>
+                <option value="air">Pengadaan Air, Sampah & Limbah</option>
+                <option value="konstruksi">Konstruksi</option>
+                <option value="perdagangan">Perdagangan Besar & Eceran</option>
+                <option value="transportasi">Transportasi dan Pergudangan</option>
+                <option value="akomodasi">Penyediaan Akomodasi & Makan Minum</option>
+                <option value="informasi">Informasi dan Komunikasi</option>
+                <option value="keuangan">Jasa Keuangan dan Asuransi</option>
+                <option value="realestate">Real Estate</option>
+                <option value="perusahaan">Jasa Perusahaan</option>
+                <option value="pendidikan">Jasa Pendidikan</option>
+                <option value="pemerintahan">Administrasi Pemerintahan</option>
+                <option value="kesehatan">Jasa Kesehatan & Kegiatan Sosial</option>
+                <option value="lainnya">Jasa Lainnya</option>
+                <option value="pengeluaran">Indikator Pengeluaran</option>
+            </select>
+        </div>
+        <button class="filter-btn" onclick="terapkanFilter()">Terapkan Filter</button>
+    </div>
+
+    <div class="categories-grid" id="categoriesGrid">
+        <%- include('../components/category-pill', { key: 'pertanian', label: 'Pertanian, Kehutanan,<br>dan Perikanan' }) %>
+        <%- include('../components/category-pill', { key: 'pertambangan', label: 'Pertambangan dan<br>Penggalian' }) %>
+        <%- include('../components/category-pill', { key: 'industri', label: 'Industri Pengolahan' }) %>
+        <%- include('../components/category-pill', { key: 'listrik', label: 'Pengadaan Listrik dan<br>Gas' }) %>
+        <%- include('../components/category-pill', { key: 'air', label: 'Pengadaan Air, Pengelolaan<br>Sampah & Limbah' }) %>
+        <%- include('../components/category-pill', { key: 'konstruksi', label: 'Konstruksi' }) %>
+        <%- include('../components/category-pill', { key: 'perdagangan', label: 'Perdagangan Besar & Eceran;<br>Reparasi Mobil' }) %>
+        <%- include('../components/category-pill', { key: 'transportasi', label: 'Transportasi dan<br>Pergudangan' }) %>
+        <%- include('../components/category-pill', { key: 'akomodasi', label: 'Penyediaan Akomodasi<br>& Makan Minum' }) %>
+        <%- include('../components/category-pill', { key: 'informasi', label: 'Informasi dan<br>Komunikasi' }) %>
+        <%- include('../components/category-pill', { key: 'keuangan', label: 'Jasa Keuangan dan<br>Asuransi' }) %>
+        <%- include('../components/category-pill', { key: 'realestate', label: 'Real Estate' }) %>
+        <%- include('../components/category-pill', { key: 'perusahaan', label: 'Jasa Perusahaan' }) %>
+        <%- include('../components/category-pill', { key: 'pendidikan', label: 'Jasa Pendidikan' }) %>
+        <%- include('../components/category-pill', { key: 'pemerintahan', label: 'Administrasi Pemerintahan &<br>Jaminan Sosial' }) %>
+        <%- include('../components/category-pill', { key: 'kesehatan', label: 'Jasa Kesehatan &<br>Kegiatan Sosial' }) %>
+        <%- include('../components/category-pill', { key: 'lainnya', label: 'Jasa Lainnya' }) %>
+        <%- include('../components/category-pill', { key: 'pengeluaran', label: 'Indikator Pengeluaran' }) %>
+    </div>
+</div>

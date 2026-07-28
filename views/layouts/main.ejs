@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard PDRB & Fenomena Ekonomi Surabaya</title>
+    <!-- Memuat Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Memuat Chart.js Plugin Datalabels -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <!-- Header & Logo -->
+    <%- include('../components/header') %>
+
+    <!-- Layout Utama -->
+    <div class="main-layout">
+        
+        <!-- Sidebar Kiri -->
+        <%- include('../components/sidebar') %>
+
+        <!-- Area Konten Utama -->
+        <div class="content-area">
+            <% if (page === 'home') { %>
+                <%- include('../pages/home') %>
+            <% } else if (page === 'kategori') { %>
+                <%- include('../pages/kategori') %>
+            <% } else if (page === 'subkategori') { %>
+                <%- include('../pages/subkategori') %>
+            <% } else if (page === 'arsip') { %>
+                <%- include('../pages/arsip') %>
+            <% } %>
+        </div>
+    </div>
+
+
+    <!-- Script JavaScript Umum -->
+    <script src="/js/main.js"></script>
+    
+    <% if (page === 'home') { %>
+        <script src="/js/chart.js"></script>
+    <% } %>
+
+    <% if (page === 'subkategori') { %>
+        <script src="/js/sektor.js"></script>
+    <% } %>
+
+    <% if (page === 'arsip') { %>
+        <script src="/js/arsip.js"></script>
+    <% } %>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<% 
+    // Format date string for display
+    let filterText = 'Semua Berita';
+    if (typeof start !== 'undefined' && start && typeof end !== 'undefined' && end) {
+        const formatDate = (dateStr) => {
+            const date = new Date(dateStr);
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            return `${months[date.getMonth()]} ${date.getFullYear()}`;
+        };
+        filterText = `Filter Aktif: ${formatDate(start)} s.d. ${formatDate(end)}`;
+    }
+%>
+
+<div class="category-page page-card" id="arsipPage">
+    <h2>Arsip / Semua Berita</h2>
+    <p>Menampilkan seluruh arsip data dan berita yang tersedia.</p>
+
+    <div class="filter-container" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <span style="font-weight: 600; color: var(--primary-color);"><%= filterText %></span>
+            <br>
+            <span style="font-size: 12px; color: var(--text-muted);">Gunakan halaman Kategori untuk mengubah filter waktu.</span>
+        </div>
+    </div>
+
+    <!-- Table Container -->
+    <div style="overflow-x: auto; border: 1px solid var(--border-soft); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; background: var(--card-bg);">
+            <thead>
+                <tr style="background: var(--bg-color); border-bottom: 2px solid var(--border-soft);">
+                    <th style="padding: 14px 16px; font-weight: 600; color: var(--text-secondary); font-size: 13px;">Judul</th>
+                    <th style="padding: 14px 16px; font-weight: 600; color: var(--text-secondary); font-size: 13px;">Kategori / Sektor</th>
+                    <th style="padding: 14px 16px; font-weight: 600; color: var(--text-secondary); font-size: 13px;">Sumber</th>
+                    <th style="padding: 14px 16px; font-weight: 600; color: var(--text-secondary); font-size: 13px;">Tanggal Upload</th>
+                </tr>
+            </thead>
+            <tbody id="arsipTableBody">
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 20px;">Memuat data...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+        <span id="pageInfo" style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">Halaman 1 dari -</span>
+        <div style="display: flex; gap: 10px;">
+            <button id="prevBtn" class="back-btn" style="margin-bottom: 0;" disabled>Sebelumnya</button>
+            <button id="nextBtn" class="back-btn" style="margin-bottom: 0;" disabled>Selanjutnya</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Pass query params from EJS to JS
+    window.START_DATE = "<%= typeof start !== 'undefined' ? start : '' %>";
+    window.END_DATE = "<%= typeof end !== 'undefined' ? end : '' %>";
+</script>

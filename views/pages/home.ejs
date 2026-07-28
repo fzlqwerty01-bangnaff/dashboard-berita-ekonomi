@@ -1,0 +1,42 @@
+<div class="home-content page-card" id="homeContent">
+    <h2>Ringkasan Statistik & Berita Ekonomi Surabaya</h2>
+    <p>Pantau jumlah berita per sektor dan pembaruan data ekonomi terbaru di Kota Surabaya.</p>
+
+    <!-- Statistik Cepat -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Berita</div>
+            <div class="stat-value">150</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Sumber</div>
+            <div class="stat-value">6</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Periode Aktif</div>
+            <div class="stat-value" style="font-size: 18px; margin-top: 6px;">Jan 2024 - Des 2026</div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid-top">
+        <!-- Kotak Bar Chart -->
+        <div class="card-box">
+            <h3>Jumlah Berita per Sektor</h3>
+            <div style="position: relative; height: 350px; width: 100%; display: flex; justify-content: center;">
+                <canvas id="newsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Kotak 5 Berita Terbaru -->
+        <div class="card-box">
+            <h3>5 Berita / Data Terbaru</h3>
+            <ul class="news-list" id="latestNewsList">
+                <%- include('../components/news-item', { title: 'Penduduk Kota Surabaya Menerima Kredit BI di Bidang Pertanian', sektor: 'Pertanian', meta: 'Januari • Kenaikan 0.88%' }) %>
+                <%- include('../components/news-item', { title: 'Perkembangan Harga Eceran Komoditas Pangan Strategis', sektor: 'Perdagangan', meta: 'Februari' }) %>
+                <%- include('../components/news-item', { title: 'Kinerja Ekspor-Impor dan Aktivitas Bongkar Muat Pelabuhan', sektor: 'Transportasi', meta: 'Maret' }) %>
+                <%- include('../components/news-item', { title: 'Tingkat Penghunian Kamar Hotel dan Akomodasi Pariwisata', sektor: 'Akomodasi', meta: 'April' }) %>
+                <%- include('../components/news-item', { title: 'Indeks Harga Konsumen (IHK) dan Laju Inflasi Bulanan', sektor: 'Indikator Pengeluaran', meta: 'Mei' }) %>
+            </ul>
+        </div>
+    </div>
+</div>

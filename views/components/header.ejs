@@ -1,0 +1,19 @@
+<div class="top-container" style="position: sticky; top: 0; background-color: var(--bg-color); z-index: 100; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-soft); padding: 20px 0; margin-top: -20px; margin-bottom: 30px;">
+    <!-- Bagian Kiri: Judul dan Tombol Menu (Mobile) -->
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <div class="mobile-menu-btn" onclick="toggleMenu()">
+            <div class="grid-icon">
+                <div></div><div></div>
+                <div></div><div></div>
+            </div>
+        </div>
+        <h1 class="header-title" id="mainHeaderTitle" style="font-size: 26px; font-weight: 800; letter-spacing: -0.5px; opacity: <%= page === 'home' ? '1' : '0' %>; transition: opacity 0.3s ease;">
+            Dashboard Monitoring Berita Ekonomi
+        </h1>
+    </div>
+    
+    <!-- Bagian Kanan: Logo BPS -->
+    <div>
+        <img src="/images/logo-bps.png" alt="Logo BPS" class="bps-logo" style="width: 48px; height: 48px; object-fit: contain;">
+    </div>
+</div>

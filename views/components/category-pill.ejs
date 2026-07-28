@@ -1,0 +1,10 @@
+<% 
+    let queryParams = '';
+    if (typeof start !== 'undefined' && start && typeof end !== 'undefined' && end) {
+        queryParams = `?start=${start}&end=${end}`;
+    }
+%>
+<a href="/subkategori/<%= key %><%= queryParams %>" class="category-pill">
+    <div class="category-circle"></div>
+    <div class="category-text"><%- label %></div>
+</a>

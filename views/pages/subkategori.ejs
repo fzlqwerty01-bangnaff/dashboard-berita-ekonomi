@@ -1,0 +1,27 @@
+<% 
+    let queryParams = '';
+    let filterText = '';
+    if (typeof start !== 'undefined' && start && typeof end !== 'undefined' && end) {
+        queryParams = `?start=${start}&end=${end}`;
+        
+        // Simple format for the text
+        const formatDate = (dateStr) => {
+            const date = new Date(dateStr);
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            return `${months[date.getMonth()]} ${date.getFullYear()}`;
+        };
+        filterText = `Menampilkan data untuk periode: ${formatDate(start)} s.d. ${formatDate(end)}`;
+    }
+%>
+<div class="subcategories-container page-card" id="subContainer">
+    <a href="/kategori<%= queryParams %>" class="back-btn" id="backBtn">← Kembali</a>
+    
+    <% if (filterText) { %>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 500;"><%= filterText %></p>
+    <% } %>
+    
+    <h3 id="subTitle">Memuat Sektor...</h3>
+    <ul class="sub-list" id="subListContent">
+        <!-- Sub-items will be rendered here dynamically by sektor.js -->
+    </ul>
+</div>

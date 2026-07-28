@@ -254,11 +254,23 @@
             renderHomeChartAndLatest();
             renderCategoriesGrid();
             renderArsipTable();
+
+            // Cek hash URL untuk membuka menu otomatis (misal: /#kategori)
+            const hash = window.location.hash.substring(1);
+            if (['home', 'kategori', 'arsip'].includes(hash)) {
+                switchPage(hash, false);
+            } else {
+                switchPage('home', false); // default
+            }
         }
 
-        function switchPage(pageId) {
-            currentPageState = pageId;
-            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+        // --- ROUTING (Berpindah Halaman) ---
+        function switchPage(pageId, pushState = true) {
+            // Sembunyikan semua halaman
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            // Hilangkan status aktif di tombol menu
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
 
             const targetSection = document.getElementById('page-' + pageId);
@@ -268,7 +280,22 @@
             if (btnIndex !== -1) {
                 document.querySelectorAll('.nav-btn')[btnIndex].classList.add('active');
             }
+
+            // Update URL hash (biar bisa di-copy link-nya)
+            if (pushState && ['home', 'kategori', 'arsip'].includes(pageId)) {
+                window.history.pushState(null, null, '#' + pageId);
+            }
         }
+
+        // Listen for browser back/forward buttons
+        window.addEventListener('popstate', () => {
+            const hash = window.location.hash.substring(1);
+            if (['home', 'kategori', 'arsip'].includes(hash)) {
+                switchPage(hash, false);
+            } else if (!hash) {
+                switchPage('home', false);
+            }
+        });
 
         function toggleMobileMenu() {
             const sidebar = document.getElementById('sidebarMenu');

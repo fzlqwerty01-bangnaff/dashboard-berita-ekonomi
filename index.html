@@ -257,20 +257,14 @@
 
             // Cek hash URL untuk membuka menu otomatis (misal: /#kategori)
             const hash = window.location.hash.substring(1);
-            if (['home', 'kategori', 'arsip'].includes(hash)) {
-                switchPage(hash, false);
-            } else {
-                switchPage('home', false); // default
-            }
+            handleHash();
         }
 
-        // --- ROUTING (Berpindah Halaman) ---
+        // --- ROUTING (Berpindah Halaman & Hash) ---
         function switchPage(pageId, pushState = true) {
-            // Sembunyikan semua halaman
             document.querySelectorAll('.page-section').forEach(section => {
                 section.classList.remove('active');
             });
-            // Hilangkan status aktif di tombol menu
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
 
             const targetSection = document.getElementById('page-' + pageId);
@@ -281,20 +275,48 @@
                 document.querySelectorAll('.nav-btn')[btnIndex].classList.add('active');
             }
 
-            // Update URL hash (biar bisa di-copy link-nya)
             if (pushState && ['home', 'kategori', 'arsip'].includes(pageId)) {
                 window.history.pushState(null, null, '#' + pageId);
             }
         }
 
-        // Listen for browser back/forward buttons
-        window.addEventListener('popstate', () => {
-            const hash = window.location.hash.substring(1);
-            if (['home', 'kategori', 'arsip'].includes(hash)) {
-                switchPage(hash, false);
-            } else if (!hash) {
+        // Fungsi khusus membaca URL yang masuk
+        function handleHash() {
+            const hash = decodeURIComponent(window.location.hash.substring(1));
+            const parts = hash.split('/');
+            
+            if (parts[0] === 'kategori') {
+                if (parts[1]) {
+                    const catObj = standardCategories.find(c => c.title === parts[1]);
+                    if (catObj) {
+                        selectedCategory = catObj;
+                        if (parts[2]) {
+                            selectedUraian = parts[2];
+                            if (parts[3] !== undefined) {
+                                switchPage('subkategori', false);
+                                renderSubNews(parts[2], parts[3] !== 'null' ? parts[3] : null, false);
+                            } else {
+                                switchPage('subkategori', false);
+                                renderSubLevel2(parts[2], false);
+                            }
+                        } else {
+                            openSubCategoryPage(catObj, false);
+                        }
+                    } else {
+                        switchPage('kategori', false);
+                    }
+                } else {
+                    switchPage('kategori', false);
+                }
+            } else if (parts[0] === 'arsip') {
+                switchPage('arsip', false);
+            } else {
                 switchPage('home', false);
             }
+        }
+
+        window.addEventListener('popstate', () => {
+            handleHash();
         });
 
         function toggleMobileMenu() {
@@ -304,7 +326,6 @@
 
         // --- HOME PAGE ---
         function renderHomeChartAndLatest() {
-            // Count per Category
             const counts = {};
             allNewsData.forEach(item => {
                 const cat = item.kategori || 'Lainnya';
@@ -312,34 +333,32 @@
             });
 
             const labels = Object.keys(counts);
-            const dataValues = Object.values(counts);
+            const data = Object.values(counts);
+
+            if (window.newsChartInst) {
+                window.newsChartInst.destroy();
+            }
 
             const ctx = document.getElementById('newsChart').getContext('2d');
-            if (chartInstance) chartInstance.destroy();
-
-            chartInstance = new Chart(ctx, {
+            window.newsChartInst = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: labels.map(l => l.length > 25 ? l.substring(0, 22) + '...' : l),
+                    labels: labels,
                     datasets: [{
-                        label: 'Jumlah Berita',
-                        data: dataValues,
-                        backgroundColor: '#2563EB',
-                        borderRadius: 6
+                        label: 'Jumlah Berita/Data',
+                        data: data,
+                        backgroundColor: '#1E3A8A',
+                        borderRadius: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: {
-                        x: { ticks: { font: { size: 11 } } },
-                        y: { beginAtZero: true }
-                    }
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
                 }
             });
 
-            // Render 5 Latest News
             const latestList = document.getElementById('latestNewsList');
             latestList.innerHTML = '';
             const top5 = allNewsData.slice(0, 5);
@@ -356,36 +375,36 @@
         }
 
         // --- KATEGORI & SUBKATEGORI ---
+        // Fixed standard categories to show even if empty
+        const standardCategories = [
+            { title: "A. Pertanian, Kehutanan, dan Perikanan", match: "Pertanian" },
+            { title: "B. Pertambangan dan Penggalian", match: "Pertambangan" },
+            { title: "C. Industri Pengolahan", match: "Industri Pengolahan" },
+            { title: "D. Pengadaan Listrik dan Gas", match: "Listrik" },
+            { title: "E. Pengadaan Air, Pengelolaan Sampah, Limbah & Daur Ulang", match: "Air" },
+            { title: "F. Konstruksi", match: "Konstruksi" },
+            { title: "G. Perdagangan Besar & Eceran; Reparasi Mobil & Sepeda Motor", match: "Perdagangan" },
+            { title: "H. Transportasi dan Pergudangan", match: "Transportasi" },
+            { title: "I. Penyediaan Akomodasi dan Makan Minum", match: "Akomodasi" },
+            { title: "J. Informasi dan Komunikasi", match: "Informasi" },
+            { title: "K. Jasa Keuangan dan Asuransi", match: "Keuangan" },
+            { title: "L. Real Estate", match: "Real Estate" },
+            { title: "M, N. Jasa Perusahaan", match: "Perusahaan" },
+            { title: "O. Jasa Pendidikan", match: "Pendidikan" },
+            { title: "P. Administrasi Pemerintahan, Pertahanan & Jaminan Sosial Wajib", match: "Pemerintahan" },
+            { title: "Q. Jasa Kesehatan dan Kegiatan Sosial", match: "Kesehatan" },
+            { title: "R, S, T, U. Jasa Lainnya", match: "Lainnya" },
+            { title: "Indikator Pengeluaran PDRB", match: "Pengeluaran" }
+        ];
+
         function renderCategoriesGrid() {
             const grid = document.getElementById('categoriesGrid');
             grid.innerHTML = '';
 
-            // Fixed standard categories to show even if empty
-            const standardCategories = [
-                { title: "A. Pertanian, Kehutanan, dan Perikanan", match: "Pertanian" },
-                { title: "B. Pertambangan dan Penggalian", match: "Pertambangan" },
-                { title: "C. Industri Pengolahan", match: "Industri Pengolahan" },
-                { title: "D. Pengadaan Listrik dan Gas", match: "Listrik" },
-                { title: "E. Pengadaan Air, Pengelolaan Sampah, Limbah & Daur Ulang", match: "Air" },
-                { title: "F. Konstruksi", match: "Konstruksi" },
-                { title: "G. Perdagangan Besar & Eceran; Reparasi Mobil & Sepeda Motor", match: "Perdagangan" },
-                { title: "H. Transportasi dan Pergudangan", match: "Transportasi" },
-                { title: "I. Penyediaan Akomodasi dan Makan Minum", match: "Akomodasi" },
-                { title: "J. Informasi dan Komunikasi", match: "Informasi" },
-                { title: "K. Jasa Keuangan dan Asuransi", match: "Keuangan" },
-                { title: "L. Real Estate", match: "Real Estate" },
-                { title: "M, N. Jasa Perusahaan", match: "Perusahaan" },
-                { title: "O. Jasa Pendidikan", match: "Pendidikan" },
-                { title: "P. Administrasi Pemerintahan, Pertahanan & Jaminan Sosial Wajib", match: "Pemerintahan" },
-                { title: "Q. Jasa Kesehatan dan Kegiatan Sosial", match: "Kesehatan" },
-                { title: "R, S, T, U. Jasa Lainnya", match: "Lainnya" },
-                { title: "Indikator Pengeluaran PDRB", match: "Pengeluaran" }
-            ];
-
             standardCategories.forEach(cat => {
                 const pill = document.createElement('div');
                 pill.className = 'category-pill';
-                pill.onclick = () => openSubCategoryPage(cat);
+                pill.onclick = () => openSubCategoryPage(cat, true);
                 pill.innerHTML = `
                     <div class="category-circle"></div>
                     <div class="category-text">${cat.title}</div>
@@ -394,10 +413,14 @@
             });
         }
 
-        function openSubCategoryPage(catObj) {
+        function openSubCategoryPage(catObj, pushState = true) {
             selectedCategory = catObj;
             currentSubLevel = 1;
-            switchPage('subkategori');
+            switchPage('subkategori', false);
+            
+            if (pushState) {
+                window.history.pushState(null, null, `#kategori/${catObj.title}`);
+            }
             renderSubLevel1();
         }
 
@@ -405,7 +428,7 @@
             currentSubLevel = 1;
             document.getElementById('subTitle').innerText = selectedCategory.title;
             document.getElementById('subBackBtn').innerText = '← Kembali ke Daftar Sektor';
-            document.getElementById('subBackBtn').onclick = () => switchPage('kategori');
+            document.getElementById('subBackBtn').onclick = () => { window.history.pushState(null, null, '#kategori'); switchPage('kategori'); };
 
             const list = document.getElementById('subListContent');
             list.innerHTML = '';
@@ -425,17 +448,21 @@
                 const li = document.createElement('li');
                 li.className = 'sub-item';
                 li.innerHTML = `<span>${ur}</span> <span>➔ Lihat Suburaian</span>`;
-                li.onclick = () => renderSubLevel2(ur);
+                li.onclick = () => renderSubLevel2(ur, true);
                 list.appendChild(li);
             });
         }
 
-        function renderSubLevel2(uraianName) {
+        function renderSubLevel2(uraianName, pushState = true) {
             selectedUraian = uraianName;
             currentSubLevel = 2;
             document.getElementById('subTitle').innerText = uraianName;
             document.getElementById('subBackBtn').innerText = '← Kembali ke Uraian';
-            document.getElementById('subBackBtn').onclick = () => renderSubLevel1();
+            document.getElementById('subBackBtn').onclick = () => openSubCategoryPage(selectedCategory, true);
+
+            if (pushState) {
+                window.history.pushState(null, null, `#kategori/${selectedCategory.title}/${uraianName}`);
+            }
 
             const list = document.getElementById('subListContent');
             list.innerHTML = '';
@@ -446,7 +473,7 @@
                 .filter(Boolean))];
 
             if (suburaians.length === 0) {
-                renderSubNews(uraianName, null);
+                renderSubNews(uraianName, null, pushState);
                 return;
             }
 
@@ -454,16 +481,20 @@
                 const li = document.createElement('li');
                 li.className = 'sub-item';
                 li.innerHTML = `<span>${sub}</span> <span>📄 Lihat Berita</span>`;
-                li.onclick = () => renderSubNews(uraianName, sub);
+                li.onclick = () => renderSubNews(uraianName, sub, true);
                 list.appendChild(li);
             });
         }
 
-        function renderSubNews(uraianName, suburaianName) {
+        function renderSubNews(uraianName, suburaianName, pushState = true) {
             currentSubLevel = 3;
             document.getElementById('subTitle').innerText = suburaianName ? `Berita: ${suburaianName}` : `Berita: ${uraianName}`;
             document.getElementById('subBackBtn').innerText = '← Kembali ke Suburaian';
-            document.getElementById('subBackBtn').onclick = () => renderSubLevel2(uraianName);
+            document.getElementById('subBackBtn').onclick = () => renderSubLevel2(uraianName, true);
+
+            if (pushState) {
+                window.history.pushState(null, null, `#kategori/${selectedCategory.title}/${uraianName}/${suburaianName || 'null'}`);
+            }
 
             const list = document.getElementById('subListContent');
             list.innerHTML = '';

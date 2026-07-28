@@ -335,40 +335,40 @@
 
             // Fixed standard categories to show even if empty
             const standardCategories = [
-                "A. Pertanian, Kehutanan, dan Perikanan",
-                "B. Pertambangan dan Penggalian",
-                "C. Industri Pengolahan",
-                "D. Pengadaan Listrik dan Gas",
-                "E. Pengadaan Air, Pengelolaan Sampah, Limbah & Daur Ulang",
-                "F. Konstruksi",
-                "G. Perdagangan Besar & Eceran; Reparasi Mobil & Sepeda Motor",
-                "H. Transportasi dan Pergudangan",
-                "I. Penyediaan Akomodasi dan Makan Minum",
-                "J. Informasi dan Komunikasi",
-                "K. Jasa Keuangan dan Asuransi",
-                "L. Real Estate",
-                "M, N. Jasa Perusahaan",
-                "O. Jasa Pendidikan",
-                "P. Administrasi Pemerintahan, Pertahanan & Jaminan Sosial Wajib",
-                "Q. Jasa Kesehatan dan Kegiatan Sosial",
-                "R, S, T, U. Jasa Lainnya",
-                "Indikator Pengeluaran PDRB"
+                { title: "A. Pertanian, Kehutanan, dan Perikanan", match: "Pertanian" },
+                { title: "B. Pertambangan dan Penggalian", match: "Pertambangan" },
+                { title: "C. Industri Pengolahan", match: "Industri Pengolahan" },
+                { title: "D. Pengadaan Listrik dan Gas", match: "Listrik" },
+                { title: "E. Pengadaan Air, Pengelolaan Sampah, Limbah & Daur Ulang", match: "Air" },
+                { title: "F. Konstruksi", match: "Konstruksi" },
+                { title: "G. Perdagangan Besar & Eceran; Reparasi Mobil & Sepeda Motor", match: "Perdagangan" },
+                { title: "H. Transportasi dan Pergudangan", match: "Transportasi" },
+                { title: "I. Penyediaan Akomodasi dan Makan Minum", match: "Akomodasi" },
+                { title: "J. Informasi dan Komunikasi", match: "Informasi" },
+                { title: "K. Jasa Keuangan dan Asuransi", match: "Keuangan" },
+                { title: "L. Real Estate", match: "Real Estate" },
+                { title: "M, N. Jasa Perusahaan", match: "Perusahaan" },
+                { title: "O. Jasa Pendidikan", match: "Pendidikan" },
+                { title: "P. Administrasi Pemerintahan, Pertahanan & Jaminan Sosial Wajib", match: "Pemerintahan" },
+                { title: "Q. Jasa Kesehatan dan Kegiatan Sosial", match: "Kesehatan" },
+                { title: "R, S, T, U. Jasa Lainnya", match: "Lainnya" },
+                { title: "Indikator Pengeluaran PDRB", match: "Pengeluaran" }
             ];
 
-            standardCategories.forEach(catName => {
+            standardCategories.forEach(cat => {
                 const pill = document.createElement('div');
                 pill.className = 'category-pill';
-                pill.onclick = () => openSubCategoryPage(catName);
+                pill.onclick = () => openSubCategoryPage(cat);
                 pill.innerHTML = `
                     <div class="category-circle"></div>
-                    <div class="category-text">${catName}</div>
+                    <div class="category-text">${cat.title}</div>
                 `;
                 grid.appendChild(pill);
             });
         }
 
-        function openSubCategoryPage(categoryName) {
-            selectedCategory = categoryName;
+        function openSubCategoryPage(catObj) {
+            selectedCategory = catObj;
             currentSubLevel = 1;
             switchPage('subkategori');
             renderSubLevel1();
@@ -376,16 +376,16 @@
 
         function renderSubLevel1() {
             currentSubLevel = 1;
-            document.getElementById('subTitle').innerText = selectedCategory;
+            document.getElementById('subTitle').innerText = selectedCategory.title;
             document.getElementById('subBackBtn').innerText = '← Kembali ke Daftar Sektor';
             document.getElementById('subBackBtn').onclick = () => switchPage('kategori');
 
             const list = document.getElementById('subListContent');
             list.innerHTML = '';
 
-            // Unique Uraian under this Category
+            // Unique Uraian under this Category (fuzzy match)
             const uraians = [...new Set(allNewsData
-                .filter(n => n.kategori === selectedCategory)
+                .filter(n => n.kategori.toLowerCase().includes(selectedCategory.match.toLowerCase()))
                 .map(n => n.uraian)
                 .filter(Boolean))];
 
@@ -414,7 +414,7 @@
             list.innerHTML = '';
 
             const suburaians = [...new Set(allNewsData
-                .filter(n => n.kategori === selectedCategory && n.uraian === uraianName)
+                .filter(n => n.kategori.toLowerCase().includes(selectedCategory.match.toLowerCase()) && n.uraian === uraianName)
                 .map(n => n.suburaian)
                 .filter(Boolean))];
 
@@ -442,7 +442,7 @@
             list.innerHTML = '';
 
             const newsList = allNewsData.filter(n => 
-                n.kategori === selectedCategory && 
+                n.kategori.toLowerCase().includes(selectedCategory.match.toLowerCase()) && 
                 n.uraian === uraianName && 
                 (suburaianName ? n.suburaian === suburaianName : true)
             );
